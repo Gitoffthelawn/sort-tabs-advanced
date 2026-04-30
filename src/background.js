@@ -119,39 +119,64 @@ function settingsSortAutoHandler(tabId, changeInfo, tabInfo) {
 }
 
 function sortTabs(comparator, settings) {
-	let num_pinned = 0;
-	return browser.tabs.query({
-		pinned : true,
-		currentWindow : true
-	}).then(
-    (pinnedTabs) => {
-		  num_pinned = pinnedTabs.length;
+	  let num_pinned = 0;
+	  return browser.tabs.query({
+		    pinned : true,
+		    currentWindow : true
+	  }).then(
+        (pinnedTabs) => {
+		        num_pinned = pinnedTabs.length;
 
-      if (settings["settings-sort-pinned"]) {
-        console.log("Sorting pinned: " + num_pinned.toString());
-		    pinnedTabs.sort(comparator);
-		    return browser.tabs.move(
-			    pinnedTabs.map((tab) => { return tab.id; }),
-			    { index : 0 });
-      } else {
-        return [];
-      }
-	  }, onError).then(
-      (_) => {
-		    return browser.tabs.query({
-			    pinned : false,
-			    currentWindow : true
-		    });
-	    }, onError).then(
-        (normalTabs) => {
-          console.log("Sorting normal " + normalTabs.length.toString());
-          console.log("Starting at index " + num_pinned);
-		      normalTabs.sort(comparator);
-		      return browser.tabs.move(
-			      normalTabs.map((tab) => { return tab.id; }),
-			      { index : num_pinned }
-		      );
-	      }, onError);
+            if (settings["settings-sort-pinned"]) {
+                console.log("Sorting pinned: " + num_pinned.toString());
+		            pinnedTabs.sort(comparator);
+		            return browser.tabs.move(
+			              pinnedTabs.map((tab) => { return tab.id; }),
+			              { index : 0 });
+            } else {
+                return [];
+            }
+	      }, onError).then(
+
+            (_) => {
+                return browser.tabs.query({
+                    pinned : false,
+                    currentWindow : true
+                }).then(
+                    (ts) => {
+                        // Chunk all tabs from given groups together
+                        // Sort each chunk
+                        // Then move the tabs
+
+                        console.log("Sorting normal " + ts.length.toString());
+                        const groupBoundaries = [0];
+
+                        for (let i = 1; i < ts.length; i++) {
+                            if (ts[i].groupId != ts[i - 1].groupId) {
+                                groupBoundaries.push(i);
+                            }
+                        }
+
+                        // Add end - slice range is non-inclusive
+                        groupBoundaries.push(ts.length);
+                        const groupChunks = [];
+
+                        for (let i = 1; i < groupBoundaries.length; i++) {
+                            groupChunks.push(ts.slice(groupBoundaries[i - 1], groupBoundaries[i]));
+                        }
+
+                        for (chunk of groupChunks) {
+                            chunk.sort(comparator);
+                        }
+
+                        const newTabIds = groupChunks.flat().map((t) => t.id);
+
+                        return browser.tabs.move(
+                            newTabIds,
+                            { index : num_pinned });
+                    }, onError);
+
+            }, onError);
 }
 
 function settingChanged(evt) {
