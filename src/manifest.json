@@ -24,7 +24,10 @@
 	  ],
     "browser_specific_settings": {
         "gecko": {
-            "id": "{d6f02b92-88b3-4aa5-ba7c-14519042171d}"
+            "id": "{d6f02b92-88b3-4aa5-ba7c-14519042171d}",
+            "data_collection_permissions": {
+                "required": ["none"]
+            }
         }
     },
     "background": {
