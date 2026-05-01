@@ -2,71 +2,91 @@
  * Comparison functions
  */
 function compareByUrlAsc(a, b) {
-	return a.url.localeCompare(b.url);
+    return a.url.localeCompare(b.url);
 }
 
 function compareByUrlDesc(a, b) {
-	return b.url.localeCompare(a.url);
+    return b.url.localeCompare(a.url);
 }
 
 function compareByDomainAsc(a, b) {
-	let url1 = new URL(a.url);
-	let url2 = new URL(b.url);
+    let url1 = new URL(a.url);
+    let url2 = new URL(b.url);
 
-	let domain1 = url1.hostname
-		  .split(".")
-		  .slice(-2)
-		  .join(".");
-	let domain2 = url2.hostname
-		  .split(".")
-		  .slice(-2)
-		  .join(".");
+    let domain1 = url1.hostname
+        .split(".")
+        .slice(-2)
+        .join(".");
+    let domain2 = url2.hostname
+        .split(".")
+        .slice(-2)
+        .join(".");
 
-	return domain1.localeCompare(domain2);
+    return domain1.localeCompare(domain2);
 }
 
 function compareByDomainDesc(a, b) {
-	let url1 = new URL(a.url);
-	let url2 = new URL(b.url);
+    let url1 = new URL(a.url);
+    let url2 = new URL(b.url);
 
-	let domain1 = url1.hostname
-		  .split(".")
-		  .slice(-2)
-		  .join(".");
-	let domain2 = url2.hostname
-		  .split(".")
-		  .slice(-2)
-		  .join(".");
+    let domain1 = url1.hostname
+        .split(".")
+        .slice(-2)
+        .join(".");
+    let domain2 = url2.hostname
+        .split(".")
+        .slice(-2)
+        .join(".");
 
-	return domain2.localeCompare(domain1);
+    return domain2.localeCompare(domain1);
 }
 
 function compareByTitleAsc(a, b) {
-	return a.title.localeCompare(b.title);
+    return a.title.localeCompare(b.title);
 }
 
 function compareByTitleDesc(a, b) {
-	return b.title.localeCompare(a.title);
+    return b.title.localeCompare(a.title);
 }
 
 function compareByLastAccessAsc(a, b) {
-	if (a.lastAccessed < b.lastAccessed) {
-		return -1;
-	} else if (a.lastAccessed > b.lastAccessed) {
-		return 1;
-	} else {
-		return 0;
-	}
+    if (a.lastAccessed < b.lastAccessed) {
+        return -1;
+    } else if (a.lastAccessed > b.lastAccessed) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 function compareByLastAccessDesc(a, b) {
-	if (b.lastAccessed < a.lastAccessed) {
-		return -1;
-	} else if (b.lastAccessed > a.lastAccessed) {
-		return 1;
-	} else {
-		return 0;
-	}
+    if (b.lastAccessed < a.lastAccessed) {
+        return -1;
+    } else if (b.lastAccessed > a.lastAccessed) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+function compareByContainerAsc(a, b) {
+    if (a.cookieStoreId < b.cookieStoreId) {
+        return -1;
+    } else if (a.cookieStoreId > b.cookieStoreId) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+function compareByContainerDesc(a, b) {
+    if (b.cookieStoreId < a.cookieStoreId) {
+        return -1;
+    } else if (b.cookieStoreId > a.cookieStoreId) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 function onSettingsSortAuto(evt) {
@@ -86,14 +106,16 @@ function onSettingsSortPinned(evt) {
 }
 
 let menuIdToComparator = {
-	"sort-by-url-asc" : compareByUrlAsc,
-	"sort-by-url-desc" : compareByUrlDesc,
-	"sort-by-domain-asc" : compareByDomainAsc,
-	"sort-by-domain-desc" : compareByDomainDesc,
-	"sort-by-last-access-asc" : compareByLastAccessAsc,
-	"sort-by-last-access-desc" : compareByLastAccessDesc,
-	"sort-by-title-asc" : compareByTitleAsc,
-	"sort-by-title-desc" : compareByTitleDesc,
+    "sort-by-url-asc" : compareByUrlAsc,
+    "sort-by-url-desc" : compareByUrlDesc,
+    "sort-by-domain-asc" : compareByDomainAsc,
+    "sort-by-domain-desc" : compareByDomainDesc,
+    "sort-by-last-access-asc" : compareByLastAccessAsc,
+    "sort-by-last-access-desc" : compareByLastAccessDesc,
+    "sort-by-title-asc" : compareByTitleAsc,
+    "sort-by-title-desc" : compareByTitleDesc,
+    "sort-by-container-asc" : compareByContainerAsc,
+    "sort-by-container-desc" : compareByContainerDesc,
 };
 
 let settingsMenuIdToHandler = {
@@ -119,24 +141,24 @@ function settingsSortAutoHandler(tabId, changeInfo, tabInfo) {
 }
 
 function sortTabs(comparator, settings) {
-	  let num_pinned = 0;
-	  return browser.tabs.query({
-		    pinned : true,
-		    currentWindow : true
-	  }).then(
+    let num_pinned = 0;
+    return browser.tabs.query({
+        pinned : true,
+        currentWindow : true
+    }).then(
         (pinnedTabs) => {
-		        num_pinned = pinnedTabs.length;
+            num_pinned = pinnedTabs.length;
 
             if (settings["settings-sort-pinned"]) {
                 console.log("Sorting pinned: " + num_pinned.toString());
-		            pinnedTabs.sort(comparator);
-		            return browser.tabs.move(
-			              pinnedTabs.map((tab) => { return tab.id; }),
-			              { index : 0 });
+                pinnedTabs.sort(comparator);
+                return browser.tabs.move(
+                    pinnedTabs.map((tab) => { return tab.id; }),
+                    { index : 0 });
             } else {
                 return [];
             }
-	      }, onError).then(
+        }, onError).then(
 
             (_) => {
                 return browser.tabs.query({

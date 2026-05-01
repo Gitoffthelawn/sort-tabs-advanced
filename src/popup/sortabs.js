@@ -61,6 +61,20 @@ let menuDefs = [{
 	icons : {
 		16 : "icons/sort-icon-access-time-desc-16.png"
 	}
+}, {
+	id : "sort-by-container-asc",
+	title : "sort by container (asc)",
+	contexts : ["tools_menu", "browser_action"],
+	icons : {
+		16 : "icons/sort-icon-container-asc-16.png"
+	}
+}, {
+	id : "sort-by-container-desc",
+	title : "sort by container (desc)",
+	contexts : ["tools_menu", "browser_action"],
+	icons : {
+		16 : "icons/sort-icon-container-desc-16.png"
+	}
 }];
 
 let settingsDefs = [{
