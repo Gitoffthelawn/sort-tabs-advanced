@@ -8,6 +8,7 @@ Web extension for sorting tabs by various criteria:
 * domain
 * title
 * last time of access
+* container
 
 I found myself frustrated that it's not possible to sort tabs by domain in Firefox 57.
 
@@ -21,6 +22,14 @@ There are switches in the popup that allow toggling automatic sorting and pinned
 The last sorting method that you selected gets remembered in settings.
 
 If automatic sorting is enabled, this sorting method will be applied every time you change tabs (create new, change url, etc.).
+
+Automatic sorting is preserved between browser restarts.
+
+## Tab groups
+
+The addon preserves tab groups.
+
+"Islands" of tab groups, surrounded by ungrouped tabs, are preserved. The ungrouped tabs before and after the group are sorted separately.
 
 ## Building the extension
 

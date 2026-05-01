@@ -127,12 +127,14 @@ function sortTabsComparatorName(compName, settings) {
   return sortTabs(menuIdToComparator[compName], settings);
 }
 
-function settingsSortAutoHandler(tabId, changeInfo, tabInfo) {
-  browser.storage.local.get({
+const defaultSettings = {
     "last-comparator": undefined,
     "settings-sort-auto": false,
     "settings-sort-pinned": false
-  }).then(
+}
+
+function settingsSortAutoHandler(tabId, changeInfo, tabInfo) {
+  browser.storage.local.get(defaultSettings).then(
     (settings) => {
       if (menuIdToComparator[settings["last-comparator"]] !== undefined) {
         return sortTabs(menuIdToComparator[settings["last-comparator"]], settings);
@@ -202,15 +204,28 @@ function sortTabs(comparator, settings) {
 }
 
 function settingChanged(evt) {
-  return settingsMenuIdToHandler[evt.target.id](evt)
-    .then(
-      (e) => {
-        return browser.storage.local.set({
-          [evt.target.id]: evt.target.checked
-        });
-      }, onError);
+    return settingsMenuIdToHandler[evt.target.id](evt)
+        .then(
+            (e) => {
+                return browser.storage.local.set({
+                    [evt.target.id]: evt.target.checked
+                });
+            }, onError);
 }
 
 function onError(error) {
   console.trace(error);
 }
+
+function startup() {
+    browser.storage.local.get(defaultSettings).then(
+        (settings) => {
+            if (settings["settings-sort-auto"]) {
+                console.log("Turning on autosort on startup");
+                browser.tabs.onUpdated.addListener(settingsSortAutoHandler);
+                browser.tabs.onCreated.addListener(settingsSortAutoHandler);
+            }
+        });
+}
+
+browser.runtime.onStartup.addListener(startup);

@@ -93,25 +93,36 @@ function onError(error) {
 }
 
 function initializeSettings() {
-  let defaultDict = settingsDefs.reduce(
-    (acc, cur, idx, src) => Object.assign(acc, {[cur.id]: false}),
-    {});
-  return browser.storage.local.get(defaultDict);
+    let defaultDict = settingsDefs.reduce(
+        (acc, cur, idx, src) => Object.assign(acc, {[cur.id]: false}),
+        {});
+
+    // this is not part of the settingsDefs, but we want it here
+    defaultDict["last-comparator"] = false;
+    return browser.storage.local.get(defaultDict);
 }
 
 function clickHandler(evt, settings) {
-  let backgroundWindow = browser.runtime.getBackgroundPage();
-  backgroundWindow.then(
-    (w) => w.sortTabsComparatorName(evt.target.id, settings))
-		.then(
-      (tab) => {
-        console.log("Click handler: " + evt.target.id);
-        return browser.storage.local.set({
-          "last-comparator": evt.target.id
-        }).then(
-				  () => window.close(),
-          onError);
-			}, onError);
+    let backgroundWindow = browser.runtime.getBackgroundPage();
+    backgroundWindow.then(
+        (w) => w.sortTabsComparatorName(evt.target.id, settings))
+		    .then(
+            (tab) => {
+                console.log("Click handler: " + evt.target.id);
+                return browser.storage.local.set({
+                    "last-comparator": evt.target.id
+                }).then(
+				            () => {
+                        document.querySelectorAll("div.active").forEach(
+                            (el) => {
+                                el.classList.remove("active");
+                            });
+                        evt.target.classList.add("active");
+                        console.log(evt.target);
+                        // window.close();
+                    },
+                    onError);
+			      }, onError);
 }
 
 function settingsClickHandler(evt, settings) {
@@ -121,14 +132,19 @@ function settingsClickHandler(evt, settings) {
 }
 
 function createButton(buttonDef, settings) {
-	let newEl = document.createElement('div');
-	newEl.id = buttonDef.id;
-  newEl.innerText = buttonDef.title;
-	// newEl.src = "../" + buttonDef.icons[16];
-	newEl.addEventListener(
-    "click",
-    (evt) => clickHandler(evt, settings));
-	return newEl;
+	  let newEl = document.createElement('div');
+	  newEl.id = buttonDef.id;
+    newEl.innerText = buttonDef.title;
+	  // newEl.src = "../" + buttonDef.icons[16];
+	  newEl.addEventListener(
+        "click",
+        (evt) => clickHandler(evt, settings));
+
+    if (newEl.id == settings["last-comparator"]) {
+        newEl.classList.add("active");
+    }
+
+	  return newEl;
 }
 
 function createSettingsToggle(buttonDef, settings) {
@@ -145,7 +161,7 @@ function createSettingsToggle(buttonDef, settings) {
 
   newEl.appendChild(checkbox);
   newEl.appendChild(label);
-  newEl.addEventListener(
+  checkbox.addEventListener(
     "click",
     (evt) => settingsClickHandler(evt, settings));
   return newEl;
@@ -178,6 +194,7 @@ document.addEventListener(
   (evt) => {
     initializeSettings().then(
       (settings) => {
-        createPopup(settings);
+          createPopup(settings);
+
       }, onError);
   });

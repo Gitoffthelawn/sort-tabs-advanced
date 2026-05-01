@@ -10,6 +10,11 @@
 	cursor : pointer;
 }
 
+div.active {
+    background-color: #cacacb;
+    color: black;
+}
+
 #options > div > *:hover,
 #settings > div > *:hover {
 	background-color : #dedede;
